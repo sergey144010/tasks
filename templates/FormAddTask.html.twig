@@ -1,0 +1,85 @@
+{% extends 'layout/default.html.twig' %}
+
+{% block title %}Add Task{% endblock %}
+
+{% block meta %}
+    <meta name="description" content="Add task" />
+{% endblock %}
+
+{% block content %}
+    <form action="/task/add" method="post" name="Form">
+        <div class="form-group">
+            <label for="taskName">Name</label>
+            {% if name is empty %}
+                <input type="text" name="name" class="form-control" id="taskName" aria-describedby="Task name" placeholder="Enter task name" value="">
+            {% else %}
+                <input type="text" name="name" class="form-control" id="taskName" aria-describedby="Task name" placeholder="Enter task name" value="{{ name }}">
+            {% endif %}
+
+            <small id="nameHelpBlock" class="form-text text-danger">
+            </small>
+        </div>
+        <div class="form-group">
+            <label for="taskTags">Tags</label>
+            {% if tags is empty %}
+                <input type="text" name="tags" class="form-control" id="taskTags" placeholder="You can enter task tags">
+            {% else %}
+                <input type="text" name="tags" class="form-control" id="taskTags" placeholder="You can enter task tags" value="{{ tags }}">
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <label for="taskPriority">Priority</label>
+            <select name="priority" class="form-control" id="taskPriority">
+                {% if priority is empty %}
+                <option value="0">low</option>
+                <option value="1">middle</option>
+                <option value="2">hight</option>
+                {% else %}
+                    {% if priority == 0 %}
+                        <option value="0" selected>low</option>
+                    {% else %}
+                        <option value="0">low</option>
+                    {% endif %}
+                    {% if priority == 1 %}
+                        <option value="1" selected>middle</option>
+                    {% else %}
+                        <option value="1">middle</option>
+                    {% endif %}
+                    {% if priority == 2 %}
+                        <option value="2" selected>hight</option>
+                    {% else %}
+                        <option value="2">hight</option>
+                    {% endif %}
+                {% endif %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="taskStatus">Status</label>
+            <select name="status" class="form-control" id="taskStatus">
+                {% if status is empty %}
+                <option value="1">in work</option>
+                <option value="0">closed</option>
+                {% else %}
+                    {% if status == 1 %}
+                        <option value="1" selected>in work</option>
+                    {% else %}
+                        <option value="1">in work</option>
+                    {% endif %}
+                    {% if status == 0 %}
+                        <option value="0" selected>closed</option>
+                    {% else %}
+                        <option value="0">closed</option>
+                    {% endif %}
+                {% endif %}
+            </select>
+        </div>
+        {% if uuid %}
+            <input type="hidden" name="uuid" value="{{ uuid }}">
+        {% endif %}
+        <button type="submit" class="sub btn btn-primary">Submit</button>
+    </form>
+{% endblock %}
+
+{% block script %}
+    <script src='/js/checkForm.js'></script>
+{% endblock %}
