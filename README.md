@@ -1,5 +1,5 @@
 # Установка, настройка, выполнение
-==================================
+
 1. git clone sergey144010/tasks
 2. composer install
 3. Заполнить настройки подключения к базе в файле
@@ -16,5 +16,5 @@ php db/createTables.php
 php -S localhost:8000 -t web/
 ```
 ### Dev enviroment
-==================
+
 Mysql 5.6.22. Php 7.1.5
