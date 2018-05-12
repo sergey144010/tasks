@@ -11,7 +11,9 @@ priority enum('0', '1', '2') not null default '2',
 status enum('0', '1') not null default '1',
 primary key (uuid)
 )
-engine = innodb;
+engine = innodb
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
 "
 );
 $pdo->query(
@@ -21,6 +23,8 @@ uuid varchar(255) not null,
 tag varchar(50) not null,
 foreign key (uuid) REFERENCES tasks (uuid) ON DELETE CASCADE
 )
-engine = innodb;
+engine = innodb
+CHARACTER SET utf8
+COLLATE utf8_general_ci;
 "
 );
