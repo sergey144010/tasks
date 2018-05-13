@@ -3,29 +3,22 @@
 namespace sergey144010\tasks\Action;
 
 
-use Psr\Http\Message\ServerRequestInterface;
 use sergey144010\tasks\RepositoryInterface;
-use Twig\Environment;
-use Zend\Diactoros\Response\EmptyResponse;
-use Zend\Diactoros\Response\HtmlResponse;
 use Zend\Diactoros\Response\JsonResponse;
+use Zend\Diactoros\ServerRequest;
 
 class GetListTaskAction
 {
-    private $request;
-    private $repository;
-    private $twig;
-
-    public function __construct(ServerRequestInterface $request, Environment $twig ,RepositoryInterface $repository)
+    /**
+     * @param ServerRequest $request
+     * @return JsonResponse
+     */
+    public function __invoke($request)
     {
-        $this->request = $request;
-        $this->repository = $repository;
-        $this->twig = $twig;
-    }
+        /** @var RepositoryInterface $repository */
+        $repository = $request->getAttribute('repository');
 
-    public function create()
-    {
-        $tasks = $this->repository->getTasks();
+        $tasks = $repository->getTasks();
         $response = new JsonResponse($tasks);
         return $response;
     }

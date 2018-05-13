@@ -2,6 +2,7 @@
 
 use sergey144010\tasks\MapAction;
 use sergey144010\tasks\TaskRepository;
+use Zend\Diactoros\Response\SapiEmitter;
 use Zend\Diactoros\ServerRequestFactory;
 use Twig\Loader\FilesystemLoader;
 use Twig\Environment;
@@ -24,8 +25,10 @@ try{
     exit;
 }
 
+$request = $request->withAttribute('twig', $twig)
+                    ->withAttribute('repository', $repository);
 
-(new MapAction($map, $request, $repository, $twig))->init();
+(new MapAction($map))->init();
 
 $matcher = $routerContainer->getMatcher();
 
@@ -40,15 +43,7 @@ foreach ($route->attributes as $key => $val) {
 }
 
 $callable = $route->handler;
-/**
- * @var \Psr\Http\Message\ResponseInterface $response
- */
+$callable = is_string($callable) ? new $callable : $callable;
 $response = $callable($request);
 
-foreach ($response->getHeaders() as $name => $values) {
-    foreach ($values as $value) {
-        header(sprintf('%s: %s', $name, $value), false);
-    }
-}
-http_response_code($response->getStatusCode());
-echo $response->getBody();
+(new SapiEmitter())->emit($response);

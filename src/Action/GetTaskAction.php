@@ -3,25 +3,24 @@
 namespace sergey144010\tasks\Action;
 
 
-use Psr\Http\Message\ServerRequestInterface;
 use sergey144010\tasks\RepositoryInterface;
 use Zend\Diactoros\Response\JsonResponse;
+use Zend\Diactoros\ServerRequest;
 
 class GetTaskAction
 {
-    private $request;
-    private $repository;
-
-    public function __construct(ServerRequestInterface $request, RepositoryInterface $repository)
+    /**
+     * @param ServerRequest $request
+     * @return JsonResponse
+     */
+    public function __invoke($request)
     {
-        $this->request = $request;
-        $this->repository = $repository;
-    }
+        $uuid = $request->getAttribute('uuid');
+        /** @var RepositoryInterface $repository */
+        $repository = $request->getAttribute('repository');
 
-    public function create()
-    {
-        $uuid = $this->request->getAttribute('uuid');
-        $task = $this->repository->getTask($uuid);
+        $task = $repository->getTask($uuid);
+
         $response = new JsonResponse([
             'uuid' => $task->getIdentity(),
             'name' => $task->getName(),

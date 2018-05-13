@@ -3,28 +3,29 @@
 namespace sergey144010\tasks\Action;
 
 
-use Psr\Http\Message\ServerRequestInterface;
 use Twig\Environment;
 use sergey144010\tasks\RepositoryInterface;
 use Zend\Diactoros\Response\HtmlResponse;
+use Zend\Diactoros\ServerRequest;
 
 class TaskEditAction
 {
-    private $request;
-    private $twig;
-    private $repository;
-
-    public function __construct(ServerRequestInterface $request, Environment $twig, RepositoryInterface $repository)
+    /**
+     * @param ServerRequest $request
+     * @return HtmlResponse
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
+     */
+    public function __invoke($request)
     {
-        $this->request = $request;
-        $this->repository = $repository;
-        $this->twig = $twig;
-    }
+        $uuid = $request->getAttribute('uuid');
+        /** @var RepositoryInterface $repository */
+        $repository = $request->getAttribute('repository');
+        /** @var Environment $twig */
+        $twig = $request->getAttribute('twig');
 
-    public function create()
-    {
-        $uuid = $this->request->getAttribute('uuid');
-        $task = $this->repository->getTask($uuid);
+        $task = $repository->getTask($uuid);
         $tags = $task->getTags();
         $string = '';
         foreach ($tags as $key => $tag) {
@@ -34,7 +35,7 @@ class TaskEditAction
                 $string .= ', '.$tag;
             };
         };
-        $view = $this->twig->render('FormAddTask.html.twig',
+        $view = $twig->render('FormAddTask.html.twig',
             [
                 'uuid' => $task->getIdentity(),
                 'name' => $task->getName(),
