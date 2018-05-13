@@ -4,6 +4,7 @@ namespace sergey144010\tasks;
 
 
 use Aura\Router\Map;
+use Aura\Router\Route;
 use sergey144010\tasks\Action\AddAction;
 use sergey144010\tasks\Action\DeleteAction;
 use sergey144010\tasks\Action\FormAddAction;
@@ -12,10 +13,15 @@ use sergey144010\tasks\Action\GetTaskAction;
 use sergey144010\tasks\Action\IndexAction;
 use sergey144010\tasks\Action\Search;
 use sergey144010\tasks\Action\TaskEditAction;
+use Zend\Diactoros\ServerRequest;
 
 class MapAction
 {
     private $map;
+    /**
+     * @var ServerRequest $request
+     */
+    private $request;
 
     public function __construct(Map $map)
     {
@@ -34,11 +40,32 @@ class MapAction
         $this->search();
     }
 
+    /**
+     * @param ServerRequest $request
+     * @return $this
+     */
+    public function withRequest($request)
+    {
+        $this->request = $request;
+        return $this;
+    }
+
     public function index()
     {
+        $path = $this->request->getUri()->getPath();
+        if($path == '/' || $path == '/task' || $path == '/task/'){
+            $route = new Route();
+            $route->name('task.index');
+            $route->path($path);
+            $route->handler(IndexAction::class);
+            $this->map->addRoute($route);
+        }
+
+        /*
         $this->map->get('task.root', '/', IndexAction::class);
         $this->map->get('task.index', '/task', IndexAction::class);
         $this->map->get('task.slash', '/task/', IndexAction::class);
+        */
     }
 
     public function delete()
