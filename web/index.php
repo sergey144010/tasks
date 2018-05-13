@@ -28,7 +28,7 @@ try{
 $request = $request->withAttribute('twig', $twig)
                     ->withAttribute('repository', $repository);
 
-(new MapAction($map))->init();
+(new MapAction($map))->withRequest($request)->init();
 
 $matcher = $routerContainer->getMatcher();
 
