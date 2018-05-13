@@ -5,10 +5,12 @@ $(document).ready(function () {
             return false;
         };
         $.ajax({
-            url: "/task/search/" + text,
+            url: "/task/search",
             type: "post",
+            data: "search=" + text,
             success: function(data){
                 $('tbody.mainTable').html(data);
+                init();
             },
         });
     });

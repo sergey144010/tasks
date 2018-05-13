@@ -1,50 +1,34 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Мария
- * Date: 12.05.2018
- * Time: 0:38
- */
 
 namespace sergey144010\tasks\Action;
 
 
-use Psr\Http\Message\ServerRequestInterface;
-use sergey144010\tasks\Helper;
-use sergey144010\tasks\RepositoryInterface;
-use sergey144010\tasks\Task;
-use sergey144010\tasks\TaskRepository;
-use sergey144010\tasks\TaskSpares\Identity;
-use sergey144010\tasks\TaskSpares\Name;
-use sergey144010\tasks\TaskSpares\Priority;
-use sergey144010\tasks\TaskSpares\Status;
 use Twig\Environment;
+use sergey144010\tasks\TaskRepository;
 use Zend\Diactoros\Response\HtmlResponse;
+use Zend\Diactoros\ServerRequest;
 
 class Search
 {
-    private $twig;
-    private $request;
     /**
-     * @var TaskRepository
+     * @param ServerRequest $request
+     * @return HtmlResponse
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      */
-    private $repository;
-
-    public function __construct(ServerRequestInterface $request, Environment $twig, RepositoryInterface $repository)
+    public function __invoke($request)
     {
-        $this->request = $request;
-        $this->twig = $twig;
-        $this->repository = $repository;
-    }
-
-    public function create()
-    {
-        $text = $this->request->getAttribute('text');
+        $text = $request->getQueryParams()['search'];
+        /** @var TaskRepository $repository */
+        $repository = $request->getAttribute('repository');
+        /** @var Environment $twig */
+        $twig = $request->getAttribute('twig');
         /**
          *  need validation here
          */
-        $tasks = $this->repository->search($text);
-        $view = $this->twig->render('delete.html.twig', [
+        $tasks = $repository->search($text);
+        $view = $twig->render('delete.html.twig', [
             'tasks' => $tasks
         ]);
         $response = new HtmlResponse($view);
