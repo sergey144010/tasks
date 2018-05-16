@@ -3,6 +3,8 @@
 namespace sergey144010\tasks;
 
 
+use sergey144010\tasks\Exception\ErrorInsertIntoTasks;
+use sergey144010\tasks\Exception\ErrorInsertIntoTasksTags;
 use sergey144010\tasks\Exception\TaskException;
 use sergey144010\tasks\TaskSpares\Identity;
 use sergey144010\tasks\TaskSpares\Name;
@@ -13,7 +15,7 @@ class TaskRepository extends Repository
 {
     /**
      * @param TaskInterface $task
-     * @return bool
+     * @return null
      * @throws TaskException
      */
     public function saveTask(TaskInterface $task)
@@ -32,7 +34,7 @@ class TaskRepository extends Repository
         $stmt->bindParam(':priority', $priority);
         $stmt->bindParam(':status', $status);
         if(!$stmt->execute()){
-            throw new TaskException('Error insert in tasks table');
+            throw new ErrorInsertIntoTasks('Error insert in tasks table');
         };
 
         $tags = array_filter($tags, [Helper::class, 'isEmptyVar']);
@@ -44,12 +46,11 @@ class TaskRepository extends Repository
             foreach ($tags as $tag){
                 if(!$stmt->execute()){
                     $this->pdo->rollBack();
-                    throw new TaskException('Error insert in tasks_tags table');
+                    throw new ErrorInsertIntoTasksTags('Error insert in tasks_tags table');
                 };
             };
         };
         $this->pdo->commit();
-        return true;
     }
 
     public function deleteTask($uuid)
@@ -119,36 +120,25 @@ class TaskRepository extends Repository
 
     public function getTasks(): array
     {
-        $sql = "SELECT * FROM tasks WHERE status = '1' ORDER BY priority DESC;";
-        $out1 = [];
-        foreach ($this->pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC) as $key=>$row) {
-            $outtag = [];
-            $sql = "SELECT * FROM tasks_tags WHERE uuid = '{$row['uuid']}';";
-            $query = $this->pdo->query($sql);
-            if($query){
-                foreach ($query as $rowtag) {
-                    $outtag[] = $rowtag['tag'];
+        $out = [];
+        $statuses = [1,0];
+        foreach ($statuses as $status) {
+            $sql = "SELECT * FROM tasks WHERE status = '".$status."' ORDER BY priority DESC;";
+            foreach ($this->pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $outtag = [];
+                $sql = "SELECT * FROM tasks_tags WHERE uuid = '{$row['uuid']}';";
+                $query = $this->pdo->query($sql);
+                if($query){
+                    foreach ($query as $rowtag) {
+                        $outtag[] = $rowtag['tag'];
+                    };
                 };
+                $out[] = $row;
+                $key = key($out);
+                $out[$key]['tags'] = $outtag;
+                next($out);
             };
-            $out1[$key] = $row;
-            $out1[$key]['tags'] = $outtag;
         };
-
-        $sql = "SELECT * FROM tasks WHERE status = '0' ORDER BY priority DESC;";
-        $out2 = [];
-        foreach ($this->pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC) as $key=>$row) {
-            $outtag = [];
-            $sql = "SELECT * FROM tasks_tags WHERE uuid = '{$row['uuid']}';";
-            $query = $this->pdo->query($sql);
-            if($query){
-                foreach ($query as $rowtag) {
-                    $outtag[] = $rowtag['tag'];
-                };
-            };
-            $out2[$key] = $row;
-            $out2[$key]['tags'] = $outtag;
-        };
-        $out = array_merge($out1, $out2);
         return $out;
     }
 
@@ -187,44 +177,32 @@ class TaskRepository extends Repository
 
     public function getTasksSearch($search = null): array
     {
-        if(isset($search)){
-            $sql = "SELECT * FROM tasks WHERE status = '1' and name LIKE '%".$search."%' ORDER BY priority DESC;";
-        }else{
-            $sql = "SELECT * FROM tasks WHERE status = '1' ORDER BY priority DESC;";
-        };
-        $out1 = [];
-        foreach ($this->pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC) as $key=>$row) {
-            $outtag = [];
-            $sql = "SELECT * FROM tasks_tags WHERE uuid = '{$row['uuid']}';";
-            $query = $this->pdo->query($sql);
-            if($query){
-                foreach ($query as $rowtag) {
-                    $outtag[] = $rowtag['tag'];
-                };
-            };
-            $out1[$key] = $row;
-            $out1[$key]['tags'] = $outtag;
-        };
 
-        if(isset($search)){
-            $sql = "SELECT * FROM tasks WHERE status = '0' and name LIKE '%".$search."%' ORDER BY priority DESC;";
-        }else{
-            $sql = "SELECT * FROM tasks WHERE status = '0' ORDER BY priority DESC;";
-        };
-        $out2 = [];
-        foreach ($this->pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC) as $key=>$row) {
-            $outtag = [];
-            $sql = "SELECT * FROM tasks_tags WHERE uuid = '{$row['uuid']}';";
-            $query = $this->pdo->query($sql);
-            if($query){
-                foreach ($query as $rowtag) {
-                    $outtag[] = $rowtag['tag'];
-                };
+        $out = [];
+        $statuses = [1,0];
+        foreach ($statuses as $status) {
+
+            if(isset($search)){
+                $sql = "SELECT * FROM tasks WHERE status = '".$status."' and name LIKE '%".$search."%' ORDER BY priority DESC;";
+            }else{
+                $sql = "SELECT * FROM tasks WHERE status = '".$status."' ORDER BY priority DESC;";
             };
-            $out2[$key] = $row;
-            $out2[$key]['tags'] = $outtag;
+
+            foreach ($this->pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $outtag = [];
+                $sql = "SELECT * FROM tasks_tags WHERE uuid = '{$row['uuid']}';";
+                $query = $this->pdo->query($sql);
+                if($query){
+                    foreach ($query as $rowtag) {
+                        $outtag[] = $rowtag['tag'];
+                    };
+                };
+                $out[] = $row;
+                $key = key($out);
+                $out[$key]['tags'] = $outtag;
+                next($out);
+            };
         };
-        $out = array_merge($out1, $out2);
         return $out;
     }
 
