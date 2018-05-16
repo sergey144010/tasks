@@ -13,7 +13,10 @@
         "ramsey/uuid": "^3.7",
         "aura/router": "^3.1",
         "zendframework/zend-diactoros": "^1.7",
-        "twig/twig": "^2.4"
+        "twig/twig": "^2.4",
+        "zendframework/zend-log": "^2.10",
+        "zendframework/zend-filter": "^2.8",
+        "zendframework/zend-servicemanager": "^3.3"
     },
     "autoload": {
         "psr-4": {
