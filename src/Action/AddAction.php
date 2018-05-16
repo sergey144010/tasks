@@ -3,6 +3,7 @@
 namespace sergey144010\tasks\Action;
 
 
+use sergey144010\tasks\Exception\TaskException;
 use sergey144010\tasks\Helper;
 use sergey144010\tasks\Task;
 use sergey144010\tasks\TaskSpares\Identity;
@@ -13,22 +14,24 @@ use Twig\Environment;
 use sergey144010\tasks\RepositoryInterface;
 use Zend\Diactoros\Response\HtmlResponse;
 use Zend\Diactoros\ServerRequest;
+use Zend\ServiceManager\ServiceManager;
 
 class AddAction
 {
     /**
      * @param ServerRequest $request
+     * @param ServiceManager $serviceManager
      * @return HtmlResponse
      * @throws \Twig_Error_Loader
      * @throws \Twig_Error_Runtime
      * @throws \Twig_Error_Syntax
      */
-    public function __invoke($request)
+    public function __invoke($request, $serviceManager)
     {
         /** @var RepositoryInterface $repository */
-        $repository = $request->getAttribute('repository');
+        $repository = $serviceManager->get('repository');
         /** @var Environment $twig */
-        $twig = $request->getAttribute('twig');
+        $twig = $serviceManager->get('twig');
 
         if(isset($request->getQueryParams()['uuid'])){
            $uuid = $request->getQueryParams()['uuid'];
@@ -50,8 +53,15 @@ class AddAction
             $task->setTags(Helper::prepareTags($request->getQueryParams()['tags']));
         };
 
-        $repository->saveTask($task);
-        $view = $twig->render('SuccessAddTask.html.twig');
+        try{
+            $repository->saveTask($task);
+            $view = $twig->render('SuccessAddTask.html.twig');
+        }catch(TaskException $error){
+            /** @var \Zend\Log\Logger $logger */
+            $logger = $serviceManager->get('logger');
+            $logger->log(\Zend\Log\Logger::DEBUG, $error->getMessage());
+            $view = $twig->render('FailedAddTask.html.twig');
+        }
         $response = new HtmlResponse($view);
         return $response;
     }

@@ -6,18 +6,21 @@ namespace sergey144010\tasks\Action;
 use sergey144010\tasks\RepositoryInterface;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Diactoros\ServerRequest;
+use Zend\ServiceManager\ServiceManager;
 
 class GetTaskAction
 {
     /**
      * @param ServerRequest $request
+     * @param ServiceManager $serviceManager
      * @return JsonResponse
      */
-    public function __invoke($request)
+    public function __invoke($request, $serviceManager)
     {
-        $uuid = $request->getAttribute('uuid');
         /** @var RepositoryInterface $repository */
-        $repository = $request->getAttribute('repository');
+        $repository = $serviceManager->get('repository');
+
+        $uuid = $request->getAttribute('uuid');
 
         $task = $repository->getTask($uuid);
 
